@@ -89,6 +89,10 @@ public class DefaultTransitiveDependencyResolver implements
     return response.getDependencies();
   }
 
+  public MavenRepository getRepository() {
+    return this.repository;
+  }
+
   // --- object basics --------------------------------------------------------
 
 }

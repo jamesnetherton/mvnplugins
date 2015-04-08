@@ -16,12 +16,11 @@
 package de.smartics.maven.plugin.jboss.modules.xml;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.*;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
@@ -37,6 +36,8 @@ import de.smartics.maven.plugin.jboss.modules.descriptor.ModuleDescriptor;
 import de.smartics.maven.plugin.jboss.modules.domain.ExecutionContext;
 import de.smartics.maven.plugin.jboss.modules.domain.SlotStrategy;
 import edu.emory.mathcs.backport.java.util.Collections;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 /**
  * Creates <code>module.xml</code> descriptors for JBoss modules.
@@ -313,15 +314,35 @@ public final class ModuleXmlBuilder
   {
     final ApplyToModule applyToModule = module.getApplyToModule();
     final List<String> staticDependencies = applyToModule.getDependenciesXml();
-    if (!(dependencies.isEmpty() && staticDependencies.isEmpty()))
-    {
+
+    Logger.log("\n\n~~~~~~~~~~~~~~~~~~~~~ ADD DEPENDENCIES FOR MODULE " + module.getName() + " START ~~~~~~~~~~~~~~~~~~~~~");
+    Logger.log("INCLUDED ARTIFACTS:");
+    for(Dependency dep : dependencies) {
+      Logger.log("\t" + dep.toString());
+    }
+
+    if (!(dependencies.isEmpty() && staticDependencies.isEmpty())) {
       final Element dependenciesElement = new Element("dependencies", NS);
 
       addStaticDependencies(staticDependencies, dependenciesElement);
       addResolvedDependencies(module, dependencies, dependenciesElement);
 
+      XMLOutputter outp = new XMLOutputter();
+      outp.setFormat(Format.getPrettyFormat());
+      StringWriter sw = new StringWriter();
+      try {
+        outp.output(dependenciesElement.getContent(), sw);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      StringBuffer sb = sw.getBuffer();
+      Logger.log("\nBUILT MODULE DEPENDENCY XML:");
+      Logger.log(sb.toString());
+
       root.addContent(dependenciesElement);
     }
+
+    Logger.log("~~~~~~~~~~~~~~~~~~~~~ ADD DEPENDENCIES FOR MODULE " + module.getName() + " END ~~~~~~~~~~~~~~~~~~~~~\n\n");
   }
 
   private void addResolvedDependencies(final ModuleDescriptor module,
@@ -339,15 +360,20 @@ public final class ModuleXmlBuilder
       final Element moduleElement = new Element("module", NS);
       moduleElement.setAttribute("name", name);
 
+      Logger.log("\nFINDING MATCHING MODULE DESCRIPTOR FOR: " + name);
       final DependenciesDescriptor dd = apply.getDescriptorThatMatches(name);
 
+      Logger.log("\nADDING RESOLVED DEPENDENCIES:");
       if(isIncludableDependency(element, dd))
       {
+        Logger.log("\tINCLUDING " + element.dependency.toString() + " SKIPPED = " + dd.getSkip() + ", OPTIONAL DD = " + dd.getOptional() + ", OPTIONAL MAVEN = " + element.dependency.isOptional());
         handleOptional(element, moduleElement, dd);
         handleExport(moduleElement, dd);
         handleServices(moduleElement, dd);
         handleSlot(module, element, moduleElement);
         dependenciesElement.addContent(moduleElement);
+      } else {
+        Logger.log("\tEXCLUDING " + element.dependency.toString() + " SKIPPED = " + dd.getSkip() + ", OPTIONAL DD = " + dd.getOptional() + ", OPTIONAL MAVEN = " + element.dependency.isOptional());
       }
     }
   }
@@ -461,10 +487,12 @@ public final class ModuleXmlBuilder
   {
     if (!staticDependencies.isEmpty())
     {
+      Logger.log("\nADDING STATIC DEPENDENCIES:");
       for (final String xml : staticDependencies)
       {
         final Element element = xmlFragmentParser.parse(xml);
         dependenciesElement.addContent(element);
+        Logger.log("\t" + element.getAttribute("name").getValue());
       }
     }
   }
@@ -474,6 +502,7 @@ public final class ModuleXmlBuilder
   private void addSortedDependencies(final Set<SortElement> sorted,
       final ModuleDescriptor owningModule, final List<Dependency> dependencies)
   {
+    Logger.log("\nADD RESOLVED MODULE DEPENDENCIES TO: " + owningModule.getName());
     for (final Dependency dependency : dependencies)
     {
       try
@@ -482,7 +511,33 @@ public final class ModuleXmlBuilder
         final String name = module.getName();
         if (!name.equals(owningModule.getName()))
         {
-          sorted.add(new SortElement(name, dependency));
+          /*
+           * It's possible for a module to have resources that share the same dependencies. Potentially these
+           * dependencies could be declared differently in their respective POM files. E.g one resource may specify the
+           * dependency as optional and another resource may declare it as being a mandatory.
+           *
+           * In this scenario, always assume that the dependency should be mandatory.
+           */
+          SortElement e = new SortElement(name, dependency);
+
+          if(sorted.contains(e))
+          {
+            Iterator<SortElement> iter = sorted.iterator();
+            while (iter.hasNext())
+            {
+              SortElement current = iter.next();
+
+              // We are processing a non-optional dependency that has already been been added to the set as optional
+              if(current.equals(e) && current.dependency.isOptional() && !dependency.isOptional())
+              {
+                // Remove so that it can be replaced later with a non-optional dependency
+                sorted.remove(current);
+                break;
+              }
+            }
+          }
+          boolean added = sorted.add(e);
+          Logger.log("\t ADD MODULE DEPENDENCY " + name + " FOR ARTIFACT " + dependency.toString() + ", ADDED TO SET = " + added);
         }
       }
       catch (final IllegalArgumentException e)

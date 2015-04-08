@@ -18,6 +18,7 @@ package de.smartics.maven.plugin.jboss.modules.aether;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -175,6 +176,9 @@ public final class MavenRepository
           .isFlagged(dependency)))
       {
         response.add(dependency);
+      } else {
+        Logger.log("\t IGNORING: " + dependency.toString());
+        Logger.log("\t\tFILE: " + artifact.getFile() + " : IS FLAGGED FOR REJECTION " + DependencyFlagger.INSTANCE.isFlagged(dependency));
       }
     }
     return response;
@@ -212,6 +216,7 @@ public final class MavenRepository
       final DependencyResult result =
           repositorySystem
               .resolveDependencies(filterSession, dependencyRequest);
+
       final DependencyNode rootNode = result.getRoot();
       final PreorderNodeListGenerator generator =
           new PreorderNodeListGenerator();

@@ -20,9 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -79,6 +77,12 @@ public final class ModuleBuilder
     this.context = context;
     this.module = module;
     this.dependencies = new ArrayList<Dependency>(dependencies);
+//    Collections.sort(this.dependencies, new Comparator<Dependency>() {
+//      @Override
+//      public int compare(final Dependency o1, final Dependency o2) {
+//        return o1.getArtifact().getArtifactId().compareTo(o2.getArtifact().getArtifactId());
+//      }
+//    });
   }
 
   // ****************************** Inner Classes *****************************

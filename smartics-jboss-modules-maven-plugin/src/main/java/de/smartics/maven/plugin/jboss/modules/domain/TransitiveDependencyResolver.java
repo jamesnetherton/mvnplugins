@@ -17,6 +17,7 @@ package de.smartics.maven.plugin.jboss.modules.domain;
 
 import java.util.List;
 
+import de.smartics.maven.plugin.jboss.modules.aether.MavenRepository;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
@@ -73,5 +74,8 @@ public interface TransitiveDependencyResolver
     throws DependencyResolutionException;
 
   // --- object basics --------------------------------------------------------
+
+
+  public MavenRepository getRepository();
 
 }

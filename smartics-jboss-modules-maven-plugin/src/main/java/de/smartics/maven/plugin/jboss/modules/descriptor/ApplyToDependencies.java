@@ -18,6 +18,7 @@ package de.smartics.maven.plugin.jboss.modules.descriptor;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import de.smartics.util.lang.Arg;
@@ -141,12 +142,22 @@ public final class ApplyToDependencies
     final DependenciesDescriptor.Builder builder =
         new DependenciesDescriptor.Builder();
 
+    boolean match = false;
+
     for (final DependenciesDescriptor descriptor : descriptors)
     {
       if (descriptor.matches(name))
       {
+        match = true;
+
+        Logger.log("\tFOUND MATCH: " + name);
+
         builder.merge(name, descriptor);
       }
+    }
+
+    if(!match) {
+      Logger.log("\tNO MATCH FOUND");
     }
 
     final DependenciesDescriptor descriptor = builder.build();

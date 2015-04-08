@@ -18,6 +18,7 @@ package de.smartics.maven.plugin.jboss.modules.aether.filter;
 import java.io.Serializable;
 import java.util.List;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
@@ -70,9 +71,15 @@ public final class DirectDependenciesOnlyFilter implements Serializable,
     }
 
     final boolean isDirect = parents.size() <= 1;
+
     if (!isDirect)
     {
       DependencyFlagger.INSTANCE.flag(node);
+//      Logger.log("\nFLAGGING DEPENDENCY " + dependency.toString() + ", OPTIONAL MAVEN = " + dependency.isOptional());
+//      Logger.log("PARENTS:");
+//      for(DependencyNode parent : parents) {
+//        Logger.log("\t" + parent.getArtifact().toString());
+//      }
     }
     return isDirect;
   }

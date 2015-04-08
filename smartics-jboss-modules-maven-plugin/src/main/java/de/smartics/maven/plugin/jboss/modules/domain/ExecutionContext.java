@@ -15,16 +15,16 @@
  */
 package de.smartics.maven.plugin.jboss.modules.domain;
 
-import java.io.File;
-import java.util.List;
-
+import de.smartics.maven.plugin.jboss.modules.descriptor.ModuleDescriptor;
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
+import de.smartics.util.lang.Arg;
+import edu.emory.mathcs.backport.java.util.Collections;
 import org.apache.maven.plugin.logging.Log;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
-import de.smartics.maven.plugin.jboss.modules.descriptor.ModuleDescriptor;
-import de.smartics.util.lang.Arg;
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.io.File;
+import java.util.List;
 
 /**
  * The context and configuration to control the building of the module archive.
@@ -346,7 +346,17 @@ public final class ExecutionContext
   {
     try
     {
-      return resolver.resolveDirect(dependency);
+      Logger.log("\nRESOLVING DEPENDENCIES FOR: " + dependency.toString());
+
+      List<Dependency> dependencies = resolver.resolveDirect(dependency);
+
+      Logger.log("\n\tRESOLVED THESE DEPENDENCIES:");
+
+      for(Dependency aDependency : dependencies) {
+        Logger.log("\t\t" + aDependency.toString() + ", OPTIONAL MAVEN = " + aDependency.isOptional());
+      }
+
+      return dependencies;
     }
     catch (final DependencyResolutionException e)
     {

@@ -20,10 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -153,6 +152,16 @@ public final class ModulesXmlLocator
       final File rootDirectory) throws IOException
   {
     final File[] fileList = rootDirectory.listFiles();
+
+//    Arrays.parallelSort(fileList, new Comparator<File>() {
+//      @Override
+//      public int compare(final File f1, final File f2) {
+//        return f1.getName().compareTo(f2.getName());
+//      }
+//    });
+
+    Logger.log("");
+
     for (final File file : fileList)
     {
       if (!file.getName().endsWith(".xml"))
@@ -165,6 +174,7 @@ public final class ModulesXmlLocator
       final String fileId = file.getAbsolutePath();
       try
       {
+        Logger.log("PARSING MODULE XML FILE " + file.getName());
         final ModulesDescriptor descriptor = parser.parse(fileId, input);
         modules.add(descriptor);
       }
@@ -175,6 +185,7 @@ public final class ModulesXmlLocator
       finally
       {
         IOUtils.closeQuietly(input);
+        Logger.log("");
       }
     }
   }

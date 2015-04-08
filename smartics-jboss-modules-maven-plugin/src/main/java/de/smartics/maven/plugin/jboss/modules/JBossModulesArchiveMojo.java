@@ -15,47 +15,6 @@
  */
 package de.smartics.maven.plugin.jboss.modules;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.archiver.MavenArchiveConfiguration;
-import org.apache.maven.archiver.MavenArchiver;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
-import org.codehaus.plexus.archiver.Archiver;
-import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.collection.DependencySelector;
-import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.DependencyFilter;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.util.graph.selector.AndDependencySelector;
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
-import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
-
 import de.smartics.maven.plugin.jboss.modules.aether.Mapper;
 import de.smartics.maven.plugin.jboss.modules.aether.MavenRepository;
 import de.smartics.maven.plugin.jboss.modules.aether.MojoRepositoryBuilder;
@@ -66,13 +25,40 @@ import de.smartics.maven.plugin.jboss.modules.aether.filter.TestScopeFilter;
 import de.smartics.maven.plugin.jboss.modules.descriptor.ArtifactClusion;
 import de.smartics.maven.plugin.jboss.modules.descriptor.ModuleDescriptor;
 import de.smartics.maven.plugin.jboss.modules.descriptor.ModulesDescriptor;
-import de.smartics.maven.plugin.jboss.modules.domain.ExecutionContext;
-import de.smartics.maven.plugin.jboss.modules.domain.ModuleBuilder;
-import de.smartics.maven.plugin.jboss.modules.domain.ModuleMap;
-import de.smartics.maven.plugin.jboss.modules.domain.PrunerGenerator;
-import de.smartics.maven.plugin.jboss.modules.domain.SlotStrategy;
-import de.smartics.maven.plugin.jboss.modules.domain.TransitiveDependencyResolver;
+import de.smartics.maven.plugin.jboss.modules.domain.*;
 import de.smartics.maven.plugin.jboss.modules.parser.ModulesXmlLocator;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.archiver.MavenArchiver;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.collection.DependencySelector;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
+import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Generates a archive containing modules from a BOM project.
@@ -488,8 +474,7 @@ public final class JBossModulesArchiveMojo extends AbstractMojo
     }
 
     final ExecutionContext context = createContext(dependencies);
-    for (final Entry<ModuleDescriptor, List<Dependency>> entry : context
-        .getModuleMap().toMap().entrySet())
+    for (final Entry<ModuleDescriptor, List<Dependency>> entry : context.getModuleMap().toMap().entrySet())
     {
       final ModuleDescriptor module = entry.getKey();
       final Collection<Dependency> moduleDependencies =
