@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
@@ -108,6 +109,8 @@ public final class ModuleBuilder
       final File moduleFolder = createModuleFolder();
       createModuleXml(moduleFolder);
       copyResources(moduleFolder);
+    } else {
+      Logger.log("NOT PROCESSING SKIPPED MODULE" + module.getName());
     }
   }
 

@@ -18,6 +18,7 @@ package de.smartics.maven.plugin.jboss.modules.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.eclipse.aether.collection.DependencyTraverser;
 
 import de.smartics.maven.plugin.jboss.modules.aether.DependencyTraverserGenerator;
@@ -104,9 +105,12 @@ public class PrunerGenerator implements DependencyTraverserGenerator
     {
       if (module.getDirectives().getSkip())
       {
+        Logger.log("MODULES SKIPPED");
+        Logger.log("\t" + module.getName());
         skipModules.add(module);
       }
     }
+    Logger.log("");
     return skipModules;
   }
 

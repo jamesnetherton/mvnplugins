@@ -27,6 +27,7 @@ import de.smartics.maven.plugin.jboss.modules.descriptor.ModuleDescriptor;
 import de.smartics.maven.plugin.jboss.modules.descriptor.ModulesDescriptor;
 import de.smartics.maven.plugin.jboss.modules.domain.*;
 import de.smartics.maven.plugin.jboss.modules.parser.ModulesXmlLocator;
+import de.smartics.maven.plugin.jboss.modules.util.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -388,6 +389,10 @@ public final class JBossModulesArchiveMojo extends AbstractMojo
 
     for (final ModulesDescriptor descriptor : modulesDescriptors)
     {
+      Logger.log("INITIALISING MODULES FROM " + descriptor.getModulesId());
+      for(ModuleDescriptor modulesDescriptor : descriptor.getDescriptors()) {
+        Logger.log("\t" + modulesDescriptor.getName());
+      }
       modules.addAll(descriptor.getDescriptors());
     }
     return modules;
@@ -483,6 +488,7 @@ public final class JBossModulesArchiveMojo extends AbstractMojo
           new ModuleBuilder(context, module, moduleDependencies);
       try
       {
+        Logger.log("RUNNING BUILDER FOR MODULE " + module.getName());
         builder.create();
       }
       catch (final IOException e)
