@@ -33,19 +33,6 @@
   <description>A collection of random yet handy Maven plugins.</description>
 
   <modules>
-    <module>maven-provision-plugin</module>
-    <module>maven-uberize-plugin</module>
-    <module>maven-linkchecker-plugin</module>
-    <module>maven-avro-plugin</module>
-    <module>fuse-javadoc-skin</module>
-    <module>fuse-jxr-skin</module>
-    <module>scala-mojo-support</module>
-    <module>maven-updatesite-plugin</module>
-    <module>maven-graph-plugin</module>
-    <module>maven-fab-plugin</module>
-    <module>maven-notices-plugin</module>
-    <module>maven-consolets-plugin</module>
-    <module>maven-bundle-summary-plugin</module>
     <module>smartics-jboss-modules-maven-plugin</module>
   </modules>
 
